@@ -6,26 +6,32 @@ ADX_LEVEL = 20
 
 
 def get_signal(df):
-    df = df.dropna()
-    if len(df) < 50:
+    try:
+        df = df.dropna()
+
+        if len(df) < 50:
+            return None
+
+        macd = ta.trend.MACD(df["Close"], 12, 26, 9)
+        signal = macd.macd_signal()
+
+        adx = ta.trend.ADXIndicator(df["High"], df["Low"], df["Close"], 14)
+
+        prev_s = signal.iloc[-2]
+        curr_s = signal.iloc[-1]
+
+        adx_v = adx.adx().iloc[-1]
+        plus = adx.adx_pos().iloc[-1]
+        minus = adx.adx_neg().iloc[-1]
+
+        if prev_s < 0 and curr_s > 0 and adx_v > ADX_LEVEL and plus > minus:
+            return "BUY"
+
+        if prev_s > 0 and curr_s < 0 and adx_v > ADX_LEVEL and minus > plus:
+            return "SELL"
+
+    except:
         return None
-
-    macd = ta.trend.MACD(df["Close"], 12, 26, 9)
-    df["signal"] = macd.macd_signal()
-
-    adx = ta.trend.ADXIndicator(df["High"], df["Low"], df["Close"], 14)
-    df["adx"] = adx.adx()
-    df["plus"] = adx.adx_pos()
-    df["minus"] = adx.adx_neg()
-
-    prev = df.iloc[-2]
-    curr = df.iloc[-1]
-
-    if prev["signal"] < 0 and curr["signal"] > 0 and curr["adx"] > ADX_LEVEL and curr["plus"] > curr["minus"]:
-        return "BUY"
-
-    if prev["signal"] > 0 and curr["signal"] < 0 and curr["adx"] > ADX_LEVEL and curr["minus"] > curr["plus"]:
-        return "SELL"
 
     return None
 
@@ -46,6 +52,7 @@ def run():
     for t in tickers:
         try:
             df = yf.download(t, period="6mo", interval="1d", progress=False)
+
             if df is None or df.empty:
                 continue
 
@@ -60,15 +67,14 @@ def run():
             continue
 
     report = "US SCANNER REPORT\n\n"
+    report += "BUY:\n" + ",".join(buy[:100]) + "\n\n"
+    report += "SELL:\n" + ",".join(sell[:100]) + "\n"
 
-    report += "BUY:\n"
-    report += ",".join(buy[:100]) + "\n\n"
-
-    report += "SELL:\n"
-    report += ",".join(sell[:100]) + "\n"
-
+    # 🔥 GUARANTEE FILE EXISTS
     with open("report.txt", "w") as f:
         f.write(report)
+
+    print("FILE CREATED")
 
 
 if __name__ == "__main__":
