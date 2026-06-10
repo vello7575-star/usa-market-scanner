@@ -20,6 +20,8 @@ jobs:
 
       - run: python scanner.py
 
+      - run: ls -la
+
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
