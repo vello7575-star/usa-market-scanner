@@ -2,6 +2,7 @@ import yfinance as yf
 import pandas as pd
 import ta
 from datetime import datetime
+import os
 
 ADX_LEVEL = 20
 
@@ -37,7 +38,9 @@ def load_universe():
     url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
     df = pd.read_csv(url)
     base = df["Symbol"].tolist()
-    return (base * 4)[:500]   # 🔥 NA START 500 (STABILNIE)
+
+    # stabilna wersja (bez crashy)
+    return (base * 2)[:500]
 
 
 def run():
@@ -70,21 +73,26 @@ def run():
         if i % 100 == 0:
             print("progress:", i)
 
-    print("FORCE SAVE FILE")
+    print("SCAN DONE")
 
     date_str = datetime.now().strftime("%Y-%m-%d")
 
-    report = "US SCANNER REPORT\n\n"
-    report += f"DATE: {date_str}\n\n"
-    report += f"BUY COUNT: {len(buy)}\n"
-    report += f"SELL COUNT: {len(sell)}\n\n"
+    report = ""
+    report += "US SCANNER REPORT\n\n"
+    report += "DATE: " + date_str + "\n\n"
+    report += "BUY COUNT: " + str(len(buy)) + "\n"
+    report += "SELL COUNT: " + str(len(sell)) + "\n\n"
     report += "BUY:\n" + ",".join(buy[:50]) + "\n\n"
-    report += "SELL:\n" + ",".join(sell[:50])
+    report += "SELL:\n" + ",".join(sell[:50]) + "\n"
 
-    with open("report.txt", "w") as f:
+    # 🔥 ABSOLUTNIE PEWNY ZAPIS
+    file_path = os.path.join(os.getcwd(), "report.txt")
+
+    with open(file_path, "w") as f:
         f.write(report)
 
-    print("FILE CREATED OK")
+    print("FILE WRITTEN:", file_path)
+    print("EXISTS:", os.path.exists(file_path))
     print("DONE")
 
 
