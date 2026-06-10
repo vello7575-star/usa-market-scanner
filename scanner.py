@@ -37,7 +37,7 @@ def load_universe():
     url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
     df = pd.read_csv(url)
     base = df["Symbol"].tolist()
-    return (base * 4)[:2000]
+    return (base * 4)[:500]   # 🔥 NA START 500 (STABILNIE)
 
 
 def run():
@@ -49,7 +49,6 @@ def run():
     sell = []
 
     for i, t in enumerate(tickers):
-        print(i, t)
 
         try:
             df = yf.download(t, period="6mo", interval="1d", progress=False)
@@ -65,26 +64,28 @@ def run():
                 sell.append(t)
 
         except Exception as e:
-            print("ERROR:", t, e)
+            print("ERROR:", t)
             continue
 
-    print("SCAN DONE")
+        if i % 100 == 0:
+            print("progress:", i)
+
+    print("FORCE SAVE FILE")
 
     date_str = datetime.now().strftime("%Y-%m-%d")
 
     report = "US SCANNER REPORT\n\n"
     report += f"DATE: {date_str}\n\n"
-    report += "BUY:\n" + ",".join(buy[:100]) + "\n\n"
-    report += "SELL:\n" + ",".join(sell[:100]) + "\n"
-
-    print("WRITING FILE...")
+    report += f"BUY COUNT: {len(buy)}\n"
+    report += f"SELL COUNT: {len(sell)}\n\n"
+    report += "BUY:\n" + ",".join(buy[:50]) + "\n\n"
+    report += "SELL:\n" + ",".join(sell[:50])
 
     with open("report.txt", "w") as f:
         f.write(report)
 
-    print("FILE WRITTEN OK")
-    print("BUY:", len(buy))
-    print("SELL:", len(sell))
+    print("FILE CREATED OK")
+    print("DONE")
 
 
 if __name__ == "__main__":
