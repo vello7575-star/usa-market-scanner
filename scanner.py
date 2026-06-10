@@ -67,18 +67,20 @@ def run():
         except:
             continue
 
-    # 📅 DATA W NAZWIE PLIKU
     date_str = datetime.now().strftime("%Y-%m-%d")
-    filename = f"report_{date_str}.txt"
 
     report = "US SCANNER REPORT\n\n"
+    report += f"DATE: {date_str}\n\n"
     report += "BUY:\n" + ",".join(buy[:100]) + "\n\n"
     report += "SELL:\n" + ",".join(sell[:100]) + "\n"
 
-    with open(filename, "w") as f:
+    # 🔥 ZAWSZE TEN SAM PLIK
+    with open("report.txt", "w") as f:
         f.write(report)
 
-    print("saved:", filename)
+    print("REPORT CREATED")
+    print("BUY:", len(buy))
+    print("SELL:", len(sell))
 
 
 if __name__ == "__main__":
