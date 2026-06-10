@@ -14,21 +14,21 @@ def get_signal(df):
         return None
 
     macd = ta.trend.MACD(df["Close"], 12, 26, 9)
-    signal = macd.macd_signal()
+    macd_line = macd.macd()
 
     adx = ta.trend.ADXIndicator(df["High"], df["Low"], df["Close"], 14)
 
-    prev_s = signal.iloc[-2]
-    curr_s = signal.iloc[-1]
+    prev_macd = macd_line.iloc[-2]
+    curr_macd = macd_line.iloc[-1]
 
-    adx_v = adx.adx().iloc[-1]
+    adx_val = adx.adx().iloc[-1]
     plus = adx.adx_pos().iloc[-1]
     minus = adx.adx_neg().iloc[-1]
 
-    if prev_s < 0 and curr_s > 0 and adx_v > ADX_LEVEL and plus > minus:
+    if prev_macd < 0 and curr_macd > 0 and adx_val > ADX_LEVEL and plus > minus:
         return "BUY"
 
-    if prev_s > 0 and curr_s < 0 and adx_v > ADX_LEVEL and minus > plus:
+    if prev_macd > 0 and curr_macd < 0 and adx_val > ADX_LEVEL and minus > plus:
         return "SELL"
 
     return None
@@ -38,18 +38,18 @@ def load_universe():
     url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
     df = pd.read_csv(url)
     base = df["Symbol"].tolist()
-
-    # stabilna wersja (bez crashy)
-    return (base * 2)[:500]
+    return (base * 4)[:2000]
 
 
 def run():
-    print("START SCAN")
+    print("START")
 
     tickers = load_universe()
 
-    buy = []
-    sell = []
+    results = {
+        "BUY": [],
+        "SELL": []
+    }
 
     for i, t in enumerate(tickers):
 
@@ -62,38 +62,35 @@ def run():
             sig = get_signal(df)
 
             if sig == "BUY":
-                buy.append(t)
-            elif sig == "SELL":
-                sell.append(t)
+                results["BUY"].append(t)
 
-        except Exception as e:
-            print("ERROR:", t)
+            elif sig == "SELL":
+                results["SELL"].append(t)
+
+        except:
             continue
 
         if i % 100 == 0:
             print("progress:", i)
 
-    print("SCAN DONE")
+    print("DONE")
 
+    # 🔥 DATE FILE NAME
     date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"report_{date_str}.txt"
 
-    report = ""
-    report += "US SCANNER REPORT\n\n"
-    report += "DATE: " + date_str + "\n\n"
-    report += "BUY COUNT: " + str(len(buy)) + "\n"
-    report += "SELL COUNT: " + str(len(sell)) + "\n\n"
-    report += "BUY:\n" + ",".join(buy[:50]) + "\n\n"
-    report += "SELL:\n" + ",".join(sell[:50]) + "\n"
+    report = "US SCANNER REPORT\n\n"
+    report += f"DATE: {date_str}\n\n"
+    report += f"BUY: {len(results['BUY'])}\n"
+    report += f"SELL: {len(results['SELL'])}\n\n"
 
-    # 🔥 ABSOLUTNIE PEWNY ZAPIS
-    file_path = os.path.join(os.getcwd(), "report.txt")
+    report += "BUY LIST:\n" + ",".join(results["BUY"][:100]) + "\n\n"
+    report += "SELL LIST:\n" + ",".join(results["SELL"][:100])
 
-    with open(file_path, "w") as f:
+    with open(filename, "w") as f:
         f.write(report)
 
-    print("FILE WRITTEN:", file_path)
-    print("EXISTS:", os.path.exists(file_path))
-    print("DONE")
+    print("FILE CREATED:", filename)
 
 
 if __name__ == "__main__":
