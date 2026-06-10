@@ -7,32 +7,28 @@ ADX_LEVEL = 20
 
 
 def get_signal(df):
-    try:
-        df = df.dropna()
+    df = df.dropna()
 
-        if len(df) < 50:
-            return None
-
-        macd = ta.trend.MACD(df["Close"], 12, 26, 9)
-        signal = macd.macd_signal()
-
-        adx = ta.trend.ADXIndicator(df["High"], df["Low"], df["Close"], 14)
-
-        prev_s = signal.iloc[-2]
-        curr_s = signal.iloc[-1]
-
-        adx_v = adx.adx().iloc[-1]
-        plus = adx.adx_pos().iloc[-1]
-        minus = adx.adx_neg().iloc[-1]
-
-        if prev_s < 0 and curr_s > 0 and adx_v > ADX_LEVEL and plus > minus:
-            return "BUY"
-
-        if prev_s > 0 and curr_s < 0 and adx_v > ADX_LEVEL and minus > plus:
-            return "SELL"
-
-    except:
+    if len(df) < 50:
         return None
+
+    macd = ta.trend.MACD(df["Close"], 12, 26, 9)
+    signal = macd.macd_signal()
+
+    adx = ta.trend.ADXIndicator(df["High"], df["Low"], df["Close"], 14)
+
+    prev_s = signal.iloc[-2]
+    curr_s = signal.iloc[-1]
+
+    adx_v = adx.adx().iloc[-1]
+    plus = adx.adx_pos().iloc[-1]
+    minus = adx.adx_neg().iloc[-1]
+
+    if prev_s < 0 and curr_s > 0 and adx_v > ADX_LEVEL and plus > minus:
+        return "BUY"
+
+    if prev_s > 0 and curr_s < 0 and adx_v > ADX_LEVEL and minus > plus:
+        return "SELL"
 
     return None
 
@@ -45,12 +41,16 @@ def load_universe():
 
 
 def run():
+    print("START SCAN")
+
     tickers = load_universe()
 
     buy = []
     sell = []
 
-    for t in tickers:
+    for i, t in enumerate(tickers):
+        print(i, t)
+
         try:
             df = yf.download(t, period="6mo", interval="1d", progress=False)
 
@@ -64,8 +64,11 @@ def run():
             elif sig == "SELL":
                 sell.append(t)
 
-        except:
+        except Exception as e:
+            print("ERROR:", t, e)
             continue
+
+    print("SCAN DONE")
 
     date_str = datetime.now().strftime("%Y-%m-%d")
 
@@ -74,11 +77,12 @@ def run():
     report += "BUY:\n" + ",".join(buy[:100]) + "\n\n"
     report += "SELL:\n" + ",".join(sell[:100]) + "\n"
 
-    # 🔥 ZAWSZE TEN SAM PLIK
+    print("WRITING FILE...")
+
     with open("report.txt", "w") as f:
         f.write(report)
 
-    print("REPORT CREATED")
+    print("FILE WRITTEN OK")
     print("BUY:", len(buy))
     print("SELL:", len(sell))
 
