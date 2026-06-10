@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import ta
+from datetime import datetime
 
 ADX_LEVEL = 20
 
@@ -66,15 +67,18 @@ def run():
         except:
             continue
 
+    # 📅 DATA W NAZWIE PLIKU
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"report_{date_str}.txt"
+
     report = "US SCANNER REPORT\n\n"
     report += "BUY:\n" + ",".join(buy[:100]) + "\n\n"
     report += "SELL:\n" + ",".join(sell[:100]) + "\n"
 
-    # 🔥 GUARANTEE FILE EXISTS
-    with open("report.txt", "w") as f:
+    with open(filename, "w") as f:
         f.write(report)
 
-    print("FILE CREATED")
+    print("saved:", filename)
 
 
 if __name__ == "__main__":
