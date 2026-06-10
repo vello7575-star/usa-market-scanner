@@ -1,12 +1,12 @@
-name: US Scanner
+name: Daily US Market Scanner
 
 on:
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 8 * * *"   # 09:00 Polska (zależnie od DST)
   workflow_dispatch:
 
 jobs:
-  run:
+  scan:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,13 +24,11 @@ jobs:
       - name: Run scanner
         run: python scanner.py
 
-      - name: Debug workspace
-        run: |
-          pwd
-          ls -la
+      - name: List files (debug)
+        run: ls -la
 
-      - name: Upload artifact
+      - name: Upload daily report
         uses: actions/upload-artifact@v4
         with:
-          name: scanner-report
-          path: report.txt
+          name: us-scan-report
+          path: report_*.txt
