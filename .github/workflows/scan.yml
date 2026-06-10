@@ -24,4 +24,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scanner-report
-          path: report_*.txt
+          path: report.txt
