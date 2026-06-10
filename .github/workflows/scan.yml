@@ -10,19 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - run: pip install yfinance pandas numpy ta
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy ta
 
-      - run: python scanner.py
+      - name: Run scanner
+        run: python scanner.py
 
-      - run: ls -la
+      - name: Debug workspace
+        run: |
+          pwd
+          ls -la
 
-      - name: Upload report
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: scanner-report
