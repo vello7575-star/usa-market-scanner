@@ -1,17 +1,12 @@
-!pip install yfinance pandas numpy ta -q
-
 import yfinance as yf
 import pandas as pd
 import ta
 
 ADX_LEVEL = 20
 
-# =========================
-# STRATEGIA MT4 (1:1)
-# =========================
+
 def get_signal(df):
     df = df.dropna()
-
     if len(df) < 50:
         return None
 
@@ -26,100 +21,55 @@ def get_signal(df):
     prev = df.iloc[-2]
     curr = df.iloc[-1]
 
-    buy = (
-        prev["signal"] < 0 and curr["signal"] > 0 and
-        curr["adx"] > ADX_LEVEL and
-        curr["plus"] > curr["minus"]
-    )
-
-    sell = (
-        prev["signal"] > 0 and curr["signal"] < 0 and
-        curr["adx"] > ADX_LEVEL and
-        curr["minus"] > curr["plus"]
-    )
-
-    if buy:
+    if prev["signal"] < 0 and curr["signal"] > 0 and curr["adx"] > ADX_LEVEL and curr["plus"] > curr["minus"]:
         return "BUY"
-    if sell:
+
+    if prev["signal"] > 0 and curr["signal"] < 0 and curr["adx"] > ADX_LEVEL and curr["minus"] > curr["plus"]:
         return "SELL"
+
     return None
 
 
-# =========================
-# UNIVERSE (~2000)
-# =========================
-url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
-df_list = pd.read_csv(url)
-
-base = df_list["Symbol"].tolist()
-tickers = (base * 4)[:2000]
+def load_universe():
+    url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
+    df = pd.read_csv(url)
+    base = df["Symbol"].tolist()
+    return (base * 4)[:2000]
 
 
-# =========================
-# TIMEFRAMES
-# =========================
-TIMEFRAMES = {
-    "4H": ("60d", "1h"),
-    "D1": ("6mo", "1d"),
-    "W1": ("5y", "1wk"),
-    "MN": ("max", "1mo")
-}
+def run():
+    tickers = load_universe()
 
+    buy = []
+    sell = []
 
-results = {
-    "4H": {"BUY": [], "SELL": []},
-    "D1": {"BUY": [], "SELL": []},
-    "W1": {"BUY": [], "SELL": []},
-    "MN": {"BUY": [], "SELL": []},
-}
-
-
-# =========================
-# SCAN
-# =========================
-for i, t in enumerate(tickers):
-
-    for tf in TIMEFRAMES:
-
-        period, interval = TIMEFRAMES[tf]
-
+    for t in tickers:
         try:
-            df = yf.download(
-                t,
-                period=period,
-                interval=interval,
-                progress=False,
-                auto_adjust=False
-            )
-
+            df = yf.download(t, period="6mo", interval="1d", progress=False)
             if df is None or df.empty:
                 continue
 
             sig = get_signal(df)
 
             if sig == "BUY":
-                results[tf]["BUY"].append(t)
-
+                buy.append(t)
             elif sig == "SELL":
-                results[tf]["SELL"].append(t)
+                sell.append(t)
 
         except:
             continue
 
-    if i % 100 == 0:
-        print("scanned:", i, "/ 2000")
+    report = "US SCANNER REPORT\n\n"
+
+    report += "BUY:\n"
+    report += ",".join(buy[:100]) + "\n\n"
+
+    report += "SELL:\n"
+    report += ",".join(sell[:100]) + "\n"
+
+    with open("report.txt", "w") as f:
+        f.write(report)
 
 
-# =========================
-# OUTPUT
-# =========================
-for tf in results:
-    print("\n====================")
-    print(tf)
-    print("====================")
-
-    print("BUY:")
-    print(results[tf]["BUY"][:50])
-
-    print("SELL:")
-    print(results[tf]["SELL"][:50])
+if __name__ == "__main__":
+    run()
