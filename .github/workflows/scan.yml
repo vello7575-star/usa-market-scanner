@@ -22,7 +22,10 @@ jobs:
 
 - name: SHOW SCANNER
   run: sed -n '1,200p' scanner.py
-      - run: python scanner.py
+      - run: |
+    echo "COMMIT CHECK"
+    git rev-parse HEAD
+    python scanner.py
 
       - run: ls -la
 
