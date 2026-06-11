@@ -45,45 +45,44 @@ def run():
 
     tickers = load_universe()
 
-    try:
-        for i, t in enumerate(tickers):
+    for i, t in enumerate(tickers):
 
-            try:
-                df = yf.download(t, period="6mo", interval="1d", progress=False)
+        try:
+            df = yf.download(t, period="6mo", interval="1d", progress=False)
 
-                if df is None or df.empty:
-                    continue
-
-                sig = get_signal(df)
-
-                if sig == "BUY":
-                    results["BUY"].append(t)
-
-                elif sig == "SELL":
-                    results["SELL"].append(t)
-
-            except:
+            if df is None or df.empty:
                 continue
 
-            if i % 100 == 0:
-                print("scanned:", i)
+            sig = get_signal(df)
 
-    finally:
-        # 🔥 TO ZAWSZE SIĘ WYKONA
-        date_str = datetime.now().strftime("%Y-%m-%d")
-        filename = f"report_{date_str}.txt"
+            if sig == "BUY":
+                results["BUY"].append(t)
 
-        report = "US SCANNER REPORT\n\n"
-        report += f"DATE: {date_str}\n\n"
-        report += f"BUY: {len(results['BUY'])}\n"
-        report += f"SELL: {len(results['SELL'])}\n\n"
-        report += "BUY LIST:\n" + ",".join(results["BUY"][:100]) + "\n\n"
-        report += "SELL LIST:\n" + ",".join(results["SELL"][:100])
+            elif sig == "SELL":
+                results["SELL"].append(t)
 
-        with open(filename, "w") as f:
-            f.write(report)
+        except:
+            continue
 
-        print("FILE CREATED:", filename)
+        if i % 100 == 0:
+            print("scanned:", i)
+
+    date_str = datetime.now().strftime("%Y-%m-%d")
+
+    # 🔥 NAJWAŻNIEJSZE: NA PEWNO TA NAZWA
+    filename = f"report_{date_str}.txt"
+
+    report = "US SCANNER REPORT\n\n"
+    report += f"DATE: {date_str}\n\n"
+    report += f"BUY: {len(results['BUY'])}\n"
+    report += f"SELL: {len(results['SELL'])}\n\n"
+    report += "BUY LIST:\n" + ",".join(results["BUY"][:100]) + "\n\n"
+    report += "SELL LIST:\n" + ",".join(results["SELL"][:100])
+
+    with open(filename, "w") as f:
+        f.write(report)
+
+    print("FILE CREATED:", filename)
 
 
 if __name__ == "__main__":
