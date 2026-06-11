@@ -2,7 +2,7 @@ name: Daily US Market Scanner
 
 on:
   schedule:
-    - cron: "0 8 * * *"   # 09:00 Polska (zależnie od DST)
+    - cron: "0 8 * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,25 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install yfinance pandas numpy ta
+      - run: pip install yfinance pandas numpy ta
 
-      - name: Run scanner
-        run: python scanner.py
+      - run: python scanner.py
 
-      - name: List files (debug)
-        run: ls -la
+      - run: ls -la
 
-      - name: Upload daily report
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: us-scan-report
+          name: scanner-report
           path: report_*.txt
