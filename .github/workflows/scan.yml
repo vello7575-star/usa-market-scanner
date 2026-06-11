@@ -5,6 +5,9 @@ on:
     - cron: "0 8 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -16,25 +19,19 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install yfinance pandas numpy ta
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy ta
 
-      - name: SHOW FILES
-        run: ls -R
-
-      - name: SHOW SCANNER
-        run: sed -n '1,200p' scanner.py
-
-      - name: RUN SCANNER
+      - name: Run scanner
         run: |
           echo "COMMIT CHECK"
           git rev-parse HEAD
           python scanner.py
 
-      - name: LIST FILES AFTER RUN
-        run: ls -la
-
-      - name: Upload history
-        uses: actions/upload-artifact@v4
-        with:
-          name: scanner-history
-          path: history.csv
+      - name: Save CSV to repo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add history.csv
+          git commit -m "update history" || echo "no changes"
+          git push
