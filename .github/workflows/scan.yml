@@ -17,17 +17,21 @@ jobs:
           python-version: "3.11"
 
       - run: pip install yfinance pandas numpy ta
-- name: SHOW FILES
-  run: ls -R
 
-- name: SHOW SCANNER
-  run: sed -n '1,200p' scanner.py
-      - run: |
-    echo "COMMIT CHECK"
-    git rev-parse HEAD
-    python scanner.py
+      - name: SHOW FILES
+        run: ls -R
 
-      - run: ls -la
+      - name: SHOW SCANNER
+        run: sed -n '1,200p' scanner.py
+
+      - name: RUN SCANNER
+        run: |
+          echo "COMMIT CHECK"
+          git rev-parse HEAD
+          python scanner.py
+
+      - name: LIST FILES AFTER RUN
+        run: ls -la
 
       - name: Upload history
         uses: actions/upload-artifact@v4
