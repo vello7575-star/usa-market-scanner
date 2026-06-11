@@ -22,7 +22,8 @@ jobs:
 
       - run: ls -la
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload history
+        uses: actions/upload-artifact@v4
         with:
-          name: scanner-report
-          path: report_*.txt
+          name: scanner-history
+          path: history.csv
