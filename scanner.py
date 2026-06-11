@@ -1,3 +1,4 @@
+print("START FILE EXECUTION")
 print("🔥 VERSION FIX ACTIVE")
 import yfinance as yf
 import pandas as pd
@@ -97,3 +98,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+print("END FILE EXECUTION")
