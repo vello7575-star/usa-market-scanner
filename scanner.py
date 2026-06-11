@@ -1,3 +1,4 @@
+print("NEW VERSION ACTIVE")
 print("START FILE EXECUTION")
 print("🔥 VERSION FIX ACTIVE")
 import yfinance as yf
