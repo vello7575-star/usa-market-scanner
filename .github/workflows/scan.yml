@@ -17,7 +17,11 @@ jobs:
           python-version: "3.11"
 
       - run: pip install yfinance pandas numpy ta
+- name: SHOW FILES
+  run: ls -R
 
+- name: SHOW SCANNER
+  run: sed -n '1,200p' scanner.py
       - run: python scanner.py
 
       - run: ls -la
