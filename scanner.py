@@ -2,8 +2,11 @@ import yfinance as yf
 import pandas as pd
 import ta
 from datetime import datetime
+import os
 
 ADX_LEVEL = 20
+
+HISTORY_FILE = "history.csv"
 
 
 def get_signal(df):
@@ -40,10 +43,26 @@ def load_universe():
     return (base * 4)[:2000]
 
 
+def load_history():
+    if os.path.exists(HISTORY_FILE):
+        return pd.read_csv(HISTORY_FILE)
+    else:
+        return pd.DataFrame(columns=["date", "ticker", "signal"])
+
+
+def save_history(df):
+    df.to_csv(HISTORY_FILE, index=False)
+
+
 def run():
-    results = {"BUY": [], "SELL": []}
+    print("START")
 
     tickers = load_universe()
+    history = load_history()
+
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    new_rows = []
 
     for i, t in enumerate(tickers):
 
@@ -55,11 +74,8 @@ def run():
 
             sig = get_signal(df)
 
-            if sig == "BUY":
-                results["BUY"].append(t)
-
-            elif sig == "SELL":
-                results["SELL"].append(t)
+            if sig in ["BUY", "SELL"]:
+                new_rows.append([today, t, sig])
 
         except:
             continue
@@ -67,22 +83,15 @@ def run():
         if i % 100 == 0:
             print("scanned:", i)
 
-    date_str = datetime.now().strftime("%Y-%m-%d")
+    # 🔥 DOPIS DO HISTORII
+    if new_rows:
+        new_df = pd.DataFrame(new_rows, columns=["date", "ticker", "signal"])
+        history = pd.concat([history, new_df], ignore_index=True)
 
-    # 🔥 NAJWAŻNIEJSZE: NA PEWNO TA NAZWA
-    filename = f"report_{date_str}.txt"
+    save_history(history)
 
-    report = "US SCANNER REPORT\n\n"
-    report += f"DATE: {date_str}\n\n"
-    report += f"BUY: {len(results['BUY'])}\n"
-    report += f"SELL: {len(results['SELL'])}\n\n"
-    report += "BUY LIST:\n" + ",".join(results["BUY"][:100]) + "\n\n"
-    report += "SELL LIST:\n" + ",".join(results["SELL"][:100])
-
-    with open(filename, "w") as f:
-        f.write(report)
-
-    print("FILE CREATED:", filename)
+    print("DONE")
+    print("ROWS ADDED:", len(new_rows))
 
 
 if __name__ == "__main__":
