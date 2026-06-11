@@ -9,7 +9,7 @@ import ta
 from datetime import datetime
 import os
 
-ADX_LEVEL = 20
+ADX_LEVEL = 19
 HISTORY_FILE = "history.csv"
 
 # -------------------------
